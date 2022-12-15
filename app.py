@@ -227,7 +227,6 @@ def searchReport():
 
         statdict = create_dict()
         
-
         while (currdate != enddate):
             statedict = create_dict()
             countydict = create_dict()
