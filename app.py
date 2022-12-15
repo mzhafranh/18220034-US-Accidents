@@ -11,6 +11,7 @@ import jwt
 import requests
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
+import json
 
 import mysql.connector
 mydb = mysql.connector.connect(
@@ -210,7 +211,7 @@ def logout():
     return redirect(url_for('indexLogin'))
 
 @app.get("/report")
-@login_required
+# @login_required
 @token_required
 def searchReport():
     cursor = mydb.cursor()
@@ -242,7 +243,7 @@ def searchReport():
             statdict.add(str(currdate), ({"date": str(currdate), "total accidents": len(result), "avg severity" : str(round(severity_avg, 2)), "sate": [statedict], "county": [countydict]}))
             currdate = nextdate
 
-        data = jsonify({"code":200, "status" : "success", "statistic" : [statdict]})
+        data = jsonify(statdict)
         return (data)
 
     else:
@@ -250,7 +251,7 @@ def searchReport():
         return (data)
 
 @app.get("/reportread/")
-@login_required
+# @login_required
 @token_required
 def readReport():
     cursor = mydb.cursor()
@@ -263,7 +264,7 @@ def readReport():
     return (data)
 
 @app.post("/reportadd/")
-@login_required
+# @login_required
 @token_required
 def addReport():
     cursor = mydb.cursor()
@@ -284,7 +285,7 @@ def addReport():
     return jsonify({"code" : 200, "status" : "successs", "message":"[SUCCESS] Record inserted"})
 
 @app.delete("/reportdel/")
-@login_required
+# @login_required
 @token_required
 def deleteReport():
     cursor = mydb.cursor()
@@ -298,7 +299,7 @@ def deleteReport():
     return jsonify({"code" : 200, "status" : "successs", "message":"[SUCCESS] Record has been deleted"})
 
 @app.put("/reportedit/")
-@login_required
+# @login_required
 @token_required
 def editReport():
     cursor = mydb.cursor()
@@ -321,21 +322,21 @@ def editReport():
 
 
 @app.get("/visualize/")
-@login_required
+# @login_required
 @token_required
 def visualize():
 
-    url_zhil = ''
-    username = 'zhil'
-    password = 'password0815'
-    url_req_token = url_zhil + "?username=" + username + "&password=" + password 
-    rtoken = requests.get(url_req_token)
-    token = (rtoken.json())["token"]
+    # url_zhil = 'http://localhost:5001/'
+    # username = 'zhil'
+    # password = 'password0815'
+    # url_req_token = url_zhil + "?username=" + username + "&password=" + password 
+    # rtoken = requests.get(url_req_token)
+    # token = rtoken["token"]
 
-    url_map = ''
-    url_req_map = url_map + "?username=" + username + "&token=" + token
+    # url_map = ''
+    # url_req_map = url_map + "?username=" + username + "&token=" + token
 
-    reqmap = requests.get(url_req_map)
+    reqmap = requests.get("http://localhost:5000/exampledata/")
 
     d_json = reqmap.json()
 
@@ -371,36 +372,149 @@ def visualize():
     plt.savefig("map.png")
     return send_file("map.png", mimetype="image/png")
 
-# @app.get("/exampledata/")
-# def getData():
-#     return jsonify({ 
-#     "code" : 200,
-#     "status" : "success",
-#     "accidents" : 
-#         [
+# @app.get("/exampleprint/")
+# def getPrint():
+#     req = (requests.get("http://localhost:5000/exampledata/").json())
+#     for item in req:
+#         return str(req[item]["total accidents"])
+    
+
+@app.get("/exampledata/")
+def getData():
+#     return jsonify({
+#     "2016-02-09": {
+#         "date": "2016-02-09",
+#         "total accidents": 24,
+#         "avg severity": "2.71",
+#         "sate": [
 #             {
-#                 "NAME" : "St. Charles",
-#                 "STUSAB" : "LA", 
-#                 "accidents_num" : 69,
-#                 "INTPTLAT" : 29.9057222,
-#                 "INTPTLON" : -90.3578553
-#             },
+#                 "OH": 9,
+#                 "IN": 10,
+#                 "WV": 1,
+#                 "MI": 2,
+#                 "PA": 2
+#             }
+#         ],
+#         "county": [
 #             {
-#                 "NAME" : "San Patricio", 
-#                 "STUSAB" : "TX", 
-#                 "accidents_num" : 42,
-#                 "INTPTLAT" : 28.0117944,
-#                 "INTPTLON" : -97.5171566
-#             },
-#             {
-#                 "NAME" : "Sebastian", 
-#                 "STUSAB" : "AR", 
-#                 "accidents_num" : 33,
-#                 "INTPTLAT" : 35.1969808,
-#                 "INTPTLON" : -94.2749889
+#                 "Franklin - OH": 2,
+#                 "Montgomery - OH": 2,
+#                 "Hamilton - OH": 1,
+#                 "Bartholomew - IN": 1,
+#                 "Greene - OH": 1,
+#                 "Shelby - IN": 1,
+#                 "Decatur - IN": 2,
+#                 "Wood - WV": 1,
+#                 "Marion - IN": 1,
+#                 "Monroe - MI": 2,
+#                 "Clark - IN": 1,
+#                 "Allegheny - PA": 2,
+#                 "Delaware - OH": 1,
+#                 "Cuyahoga - OH": 1,
+#                 "Summit - OH": 1,
+#                 "Jay - IN": 2,
+#                 "Wayne - IN": 2
 #             }
 #         ]
+#     },
+#     "2016-02-10": {
+#         "date": "2016-02-10",
+#         "total accidents": 32,
+#         "avg severity": "2.5",
+#         "sate": [
+#             {
+#                 "OH": 22,
+#                 "IN": 2,
+#                 "PA": 3,
+#                 "KY": 3,
+#                 "WV": 2
+#             }
+#         ],
+#         "county": [
+#             {
+#                 "Franklin - OH": 5,
+#                 "Van Wert - OH": 1,
+#                 "Henry - IN": 1,
+#                 "Cuyahoga - OH": 6,
+#                 "Crawford - PA": 1,
+#                 "Montgomery - OH": 4,
+#                 "Steuben - IN": 1,
+#                 "Jefferson - KY": 3,
+#                 "Summit - OH": 2,
+#                 "Clark - OH": 1,
+#                 "Erie - PA": 1,
+#                 "Upshur - WV": 1,
+#                 "Lucas - OH": 1,
+#                 "Lake - OH": 2,
+#                 "Washington - PA": 1,
+#                 "Kanawha - WV": 1
+#             }
+#         ]
+#     },
+#     "2016-02-11": {
+#         "date": "2016-02-11",
+#         "total accidents": 58,
+#         "avg severity": "2.38",
+#         "sate": [
+#             {
+#                 "IN": 6,
+#                 "OH": 40,
+#                 "KY": 3,
+#                 "WV": 5,
+#                 "PA": 4
+#             }
+#         ],
+#         "county": [
+#             {
+#                 "Steuben - IN": 3,
+#                 "Williams - OH": 2,
+#                 "Medina - OH": 1,
+#                 "Montgomery - OH": 4,
+#                 "Cuyahoga - OH": 10,
+#                 "Pendleton - KY": 1,
+#                 "Kenton - KY": 2,
+#                 "Floyd - IN": 1,
+#                 "Kanawha - WV": 4,
+#                 "Summit - OH": 8,
+#                 "Allen - IN": 1,
+#                 "Braxton - WV": 1,
+#                 "Franklin - OH": 4,
+#                 "Hamilton - OH": 11,
+#                 "Clark - IN": 1,
+#                 "Allegheny - PA": 4
+#             }
+#         ]
+#     }
 # })
+
+    return jsonify({ 
+    "code" : 200,
+    "status" : "success",
+    "accidents" : 
+        [
+            {
+                "NAME" : "St. Charles",
+                "STUSAB" : "LA", 
+                "accidents_num" : 69,
+                "INTPTLAT" : 29.9057222,
+                "INTPTLON" : -90.3578553
+            },
+            {
+                "NAME" : "San Patricio", 
+                "STUSAB" : "TX", 
+                "accidents_num" : 42,
+                "INTPTLAT" : 28.0117944,
+                "INTPTLON" : -97.5171566
+            },
+            {
+                "NAME" : "Sebastian", 
+                "STUSAB" : "AR", 
+                "accidents_num" : 33,
+                "INTPTLAT" : 35.1969808,
+                "INTPTLON" : -94.2749889
+            }
+        ]
+})
 
 if __name__ == "__main__":
     app.run()
