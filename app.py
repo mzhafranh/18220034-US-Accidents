@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, jsonify, url_for
+from flask import Flask, request, render_template, redirect, jsonify, url_for, send_file
 from flask_login import UserMixin, login_user, LoginManager,login_required, logout_user, current_user
 from flask_bcrypt import Bcrypt
 from functools import wraps
@@ -9,7 +9,8 @@ import pyotp
 import datetime
 import jwt
 import requests
-import pandas
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
 
 import mysql.connector
 mydb = mysql.connector.connect(
@@ -319,12 +320,88 @@ def editReport():
 
     return jsonify({"code" : 200, "status" : "successs", "message":"[SUCCESS] Record updated"})
 
-@app.put("/visualize/")
+
+@app.get("/visualize/")
 @login_required
 @token_required
 def visualize():
-    return "uwu"
 
+    url_zhil = ''
+    username = 'zhil'
+    password = 'password0815'
+    url_req_token = url_zhil + "?username=" + username + "&password=" + password 
+    rtoken = requests.get(url_req_token)
+    token = (rtoken.json())["token"]
+
+    url_map = ''
+    url_req_map = url_map + "?username=" + username + "&token=" + token
+
+    reqmap = requests.get(url_req_map)
+
+    d_json = reqmap.json()
+
+    x = []
+    y = []
+    acc_num = []
+
+    for i in range(len(d_json['accidents'])):
+        x.append(d_json['accidents'][i]['INTPTLON'])
+        y.append(d_json['accidents'][i]['INTPTLAT'])
+        acc_num.append(d_json['accidents'][i]['accidents_num'])
+
+    # Make a map of the United States
+    plt.figure(figsize=(12, 6))
+    map_us = Basemap( 
+        llcrnrlat=22, 
+        llcrnrlon=-119, 
+        urcrnrlat=49, 
+        urcrnrlon=-64, 
+        projection="lcc",
+        lat_1=33,
+        lat_2=45,
+        lon_0=-95
+    )
+    map_us.drawmapboundary(fill_color="#A6CAE0", linewidth=0)
+    map_us.fillcontinents(color="grey", alpha=0.3)
+    map_us.drawcoastlines(linewidth=0.1, color="white")
+
+    # Plot extracted data to the map
+    map_us.scatter(x, y, s=acc_num, alpha=0.5, latlon=True)
+
+    # Save image and send to requester
+    plt.savefig("map.png")
+    return send_file("map.png", mimetype="image/png")
+
+# @app.get("/exampledata/")
+# def getData():
+#     return jsonify({ 
+#     "code" : 200,
+#     "status" : "success",
+#     "accidents" : 
+#         [
+#             {
+#                 "NAME" : "St. Charles",
+#                 "STUSAB" : "LA", 
+#                 "accidents_num" : 69,
+#                 "INTPTLAT" : 29.9057222,
+#                 "INTPTLON" : -90.3578553
+#             },
+#             {
+#                 "NAME" : "San Patricio", 
+#                 "STUSAB" : "TX", 
+#                 "accidents_num" : 42,
+#                 "INTPTLAT" : 28.0117944,
+#                 "INTPTLON" : -97.5171566
+#             },
+#             {
+#                 "NAME" : "Sebastian", 
+#                 "STUSAB" : "AR", 
+#                 "accidents_num" : 33,
+#                 "INTPTLAT" : 35.1969808,
+#                 "INTPTLON" : -94.2749889
+#             }
+#         ]
+# })
 
 if __name__ == "__main__":
     app.run()

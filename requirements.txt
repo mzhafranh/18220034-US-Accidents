@@ -11,4 +11,5 @@ flask_bcrypt==1.0.1
 pyotp==2.7.0
 pyjwt==2.6.0
 requests
-pandas
+matplotlib
+basemap
