@@ -1,0 +1,42 @@
+{% extends 'base.html'  %}
+
+{% block content %}
+
+    <h1>Report Table</h1>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-primary">
+            
+            <tr>
+                <th>ID</th>
+                <th>Severity</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Start Lat</th>
+                <th>Start Lng</th>
+                <th>End Lat</th>
+                <th>End Lng</th>
+            </tr>
+
+        </thead>
+        <tbody>
+
+            {% for item in data %}
+
+                <tr>
+                    <td>{{data[item]['id']}}</td>
+                    <td>{{data[item]['severity']}}</td>
+                    <td>{{data[item]['start_time']}}</td>
+                    <td>{{data[item]['end_time']}}</td>
+                    <td>{{data[item]['start_lat']}}</td>
+                    <td>{{data[item]['start_lng']}}</td>
+                    <td>{{data[item]['end_lat']}}</td>
+                    <td>{{data[item]['end_lng']}}</td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+{% endblock %}
